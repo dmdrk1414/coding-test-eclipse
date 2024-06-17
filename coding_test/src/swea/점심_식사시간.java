@@ -1,4 +1,4 @@
-package window;
+package swea;
 
 import java.util.*;
 import java.io.*;
