@@ -1,3 +1,5 @@
+package window;
+
 import java.util.*;
 import java.io.*;
 
@@ -24,7 +26,7 @@ import java.io.*;
 
  */
 
-class Solution {
+class  점심_식사시간{
 	static int FIRST = 0;
 	static int SECOND = 1;
 	static Scanner sc = new Scanner(System.in);
