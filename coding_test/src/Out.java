@@ -1,6 +1,6 @@
 import java.util.*;
 
-public class Print{
+public class Out{
 	public static void print() {
 		System.out.println();
 	}
@@ -9,11 +9,27 @@ public class Print{
 		System.out.println(str);
 		print();
 	} 
+	
+	public static void print_line() {
+		System.out.println("===============================");
+	}
 
 	public static<T> void print(String str, T a) {
 		System.out.println(str + ": " + a);
 		print();
 	} 
+
+	public static void print(String str, int[][] arr) {
+		print(str);
+		for(int i = 0; i < arr.length ; i++	) {
+			System.out.print(i + ": ");
+			for(int j = 0; j < arr[0].length ; j++	) {
+				System.out.print(arr[i][j] + " ");
+			}
+			print();
+		}
+		print();
+	}
 
 	public static<T> void print(String str, T[][] arr) {
 		print(str);
@@ -26,6 +42,12 @@ public class Print{
 		}
 		print();
 	}
+
+	public static<T> void print(String str, T[] arr) {
+		print(str);
+		System.out.println(Arrays.toString(arr));
+		print();
+	} 
 	
 	public static void print(String str, int[] arr) {
 		print(str);
