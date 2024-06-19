@@ -1,3 +1,4 @@
+package swea;
 import java.util.*;
 import java.io.FileInputStream;
 
@@ -11,7 +12,7 @@ import java.io.FileInputStream;
 0 0 0 0 0 0
 
  */
-class Solution {
+class 탈주범_검거 {
 	static Scanner sc = new Scanner(System.in);
 	static int N, M, R, C, L;
 	static int result;
