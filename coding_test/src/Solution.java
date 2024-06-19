@@ -3,186 +3,195 @@ import java.io.*;
 
 /**
 1
-5
-0 1 1 0 0
-0 0 1 0 3
-0 1 0 1 0
-0 0 0 0 0
-1 0 5 0 0
+5 6 2 1 3
+0 0 5 3 6 0
+0 0 2 0 2 0
+3 3 1 3 7 0
+0 0 0 0 0 0
+0 0 0 0 0 0
 
 1
-9
-0 0 0 1 0 0 0 0 0
-0 1 0 0 0 0 0 0 0
-0 0 0 0 0 0 0 0 8
-7 0 0 0 0 1 0 0 0
-0 0 0 0 0 1 1 0 0
-0 0 0 0 0 0 0 0 0
-1 0 0 0 0 1 0 0 0
-0 0 0 0 0 0 0 0 0
-0 0 0 0 0 0 0 0 0
+5 6 2 2 6      
+3 0 0 0 0 3
+2 0 0 0 0 6
+1 3 1 1 3 1
+2 0 2 0 0 2
+0 0 4 3 1 1
 
  */
 
 class Solution {
-	static int FIRST = 0;
-	static int SECOND = 1;
 	static Scanner sc = new Scanner(System.in);
-	static int[] result;
-	static int N;
-	static List<person> person_q;
-
-	static PriorityQueue<person> per_stair_q; // 목적하는 계단을 나눈다 
-	static stair[] stairs; // 계단 정보
-	static Queue<person> wait_q; // 기달리는 사람들
-	static Queue<person> stair_q; // 계단에 있는 사람들
-
-	static void input() {
+	static int result;
+	static int N, M, R, C, L;
+	static int[][] map;
+	static int[][] visited;
+	
+	public static void input() {
+		result = 0;
 		N = sc.nextInt();
-		result = new int[3];
-		person_q = new ArrayList<>();
-		stairs = new stair[2];
-		result[2] = 99999;
-
-
-
-		int per_num = 1;
+		M = sc.nextInt();
+		R = sc.nextInt();
+		C = sc.nextInt();
+		L = sc.nextInt();
+		map = new int[N][M];
+		visited = new int[N][M];
+		
 		for(int i = 0; i < N; i++) {
-			for(int j = 0; j < N; j++) {
-
-				int num = sc.nextInt();
-				if(num == 1) {
-					person_q.add(new person(i, j, per_num++));
-				}
-				if(num > 1) {
-					if(stairs[0] == null) {
-						stairs[0] = new stair(i, j, num);
-					}else {
-						stairs[1] = new stair(i, j, num);
-					}
-				}
-			}
-		}
-	}
-
-
-	static void cal_time(int[] stair_infos, int TYPE) {
-		result[TYPE] = 0;
-		per_stair_q = new PriorityQueue<>();
-		wait_q = new LinkedList<>(); // 기달리는 사람
-		stair_q = new LinkedList<>(); // 계단에 있는 사람
-
-		// 목적을 하는 계단의 정보에 따른 계산
-		for(int i = 0; i < person_q.size(); i++) {
-			person per = person_q.get(i).clone();
-			if(stair_infos[i] == TYPE) {
-				per.live = distance(per, stairs[TYPE]); // 거리 계산
-				per_stair_q.add(per);
+			for(int j = 0; j < M; j++) {
+				map[i][j] = sc.nextInt();
 			}
 		}
 		
+//		Out.print("초기 파이트", map);
+	}
 
-		int time = 0;
-		while(true) {
-			// 첫번째 계단 관리
-			cal_stair(time, TYPE);
+	public static void pro() {
+		// 초기 맨홀에 떨어질때
+		visited[R][C] = 1;
+		Queue<info> q = new LinkedList<>();
+		q.add(new info(R, C, 1));
+		
+//		for(int time = 1 ; time <= L ; time++) {
+		while(!q.isEmpty()) {
+			info now_info = q.poll();
+			// 시간 확인
 
-			// 모든 큐가 비어있다면
-			if(valid(per_stair_q, wait_q, stair_q))
+//			Out.print("거리 계산 확인", visited);
+//			Out.print("시간", now_info.cnt);
+			if(now_info.cnt == L) {
 				break;
-
-			time++;
-		}
-	}
-
-
-	static void cal_stair(int time, int TYPE) {
-		// 대기하는 사람들 관리
-		for(person waite_per: wait_q) {
-			waite_per.waite++;
-		}
-		
-		// 계단에 있는 사람 관리
-		for(person stair_per: stair_q) {
-			stair_per.stair++;
-		}
-
-		int stair_q_size = stair_q.size();
-		for(int i = 0; i < stair_q_size; i++) {
-			person stair_per = stair_q.poll();
-			
-			// 계단을 다타면?
-			if(stair_per.stair == stairs[TYPE].num) {
-				// 시간 계산
-				int temp = stair_per.live + stair_per.waite + stair_per.stair;
-				result[TYPE] = Math.max(result[TYPE], temp);
-			}else {
-				stair_q.add(stair_per);
 			}
+
+			int xx = now_info.x;
+			int yy = now_info.y;
+
+			// 파이프 관에따른 방향
+			int[][] dirs = dir(xx, yy);
+			if(dirs == null) break;
 			
-		}
-		
-		// 계단에 사람 넣기
-		while(stair_q.size() < 3) {
-			if(wait_q.isEmpty()) break;
-			stair_q.add(wait_q.poll());
-		}
-
-		// 도착한 사람들이 있는가?
-		int per_stair_q_size = per_stair_q.size();
-		for(int i = 0; i < per_stair_q_size; i++) {
-			person check_per = per_stair_q.peek();
+//			Out.print_line();
+//			Out.print("초기 파이트", map);
+//			Out.print("xx", xx);
+//			Out.print("yy", yy);
+//			Out.print("map[xx][yy]", map[xx][yy]);
+//			Out.print("파이프 관에 따른 방향", dirs);
+//			
 			
-			// 도착한 사람이있으면
-			if(check_per.live == time) {
-				person live_per = per_stair_q.poll();
-				wait_q.add(live_per);
-			}		
+			// 파이프에 따른 거리
+			for(int[] dir : dirs) {
+				int nx = xx + dir[0]; int ny = yy + dir[1];
+				if(nx < 0 || ny < 0 || nx >= N || ny >= M) continue;
+				if(map[nx][ny] == 0) continue;
+				if(visited[nx][ny] != 0) continue;
+				if(valid(xx, yy, nx, ny)) continue;
+
+//				Out.print("xx", xx);
+//				Out.print("yy", yy);
+//				Out.print("nx", nx);
+//				Out.print("ny", ny);
+//				Out.print("파이프 관에 따른 방향", dirs);
+//				if(nx == 4 && ny == 2) {
+//				Out.print("nx", nx);
+//				Out.print("ny", ny);
+//				Out.print("파이프 관에 따른 방향", dirs);
+//				}
+
+				visited[nx][ny] = 1;
+				q.add(new info(nx, ny, now_info.cnt + 1));
+			}
 		}
-	}
-
-	private static boolean valid(PriorityQueue<person> per_stair_q2,
-			Queue<person> wait_q2, Queue<person> stair_q2) {
 		
-		if(!per_stair_q2.isEmpty()) return false;
-		if(!wait_q2.isEmpty()) return false;
-		if(!stair_q2.isEmpty()) return false;
 		
-		return true;
-	}
-
-
-	static int distance(person p, stair s) {
-		return Math.abs(p.x - s.x) + Math.abs(p.y - s.y);
-	}
-	
-	static int cnt = 0;
-	
-	static void recul(int idx, int[] stair_infos) {
-		if(idx == person_q.size()) {
-			cal_time(stair_infos, FIRST);
-			cal_time(stair_infos, SECOND);
-
-			// 계산
-			int max_result = Math.max(result[FIRST] , result[SECOND]);
-			result[2] = Math.min(result[2], max_result);
-		}else {
-			for(int i = 0; i < 2; i++) {
-				stair_infos[idx] = i;
-				recul(idx + 1, stair_infos);
-				stair_infos[idx] = 0;
+		for(int i = 0 ; i < N ; i++) {
+			for(int j = 0 ; j < M ; j++) {
+				if(visited[i][j] == 1) {
+					result++;
+				}
 			}
 		}
 	}
+	
+	static class info{
+		int x, y, cnt;
+		
+		public info(int x, int y, int cnt) {
+			this.x = x;
+			this.y = y;
+			this.cnt = cnt;
+		}
+	}
+	
+	public static boolean valid(int xx, int yy, int nx, int ny) {
+		int dir = 0; // 방향 검증
+		int xxyy_map = map[xx][yy];
+		int nxny_map = map[nx][ny];
 
+		if(xx == nx) {
+			// L -> R
+			if(yy < ny) {
+				dir = 0;
+			}
+			// L <- R
+			else if(yy > ny){
+				dir = 1;
+			}
+		}else if (yy == ny) {
+			// H -> L
+			if(xx < nx) {
+				dir = 2;
+			}
+			// H <- L
+			else if(xx > nx) {
+				dir = 3;
+			}
+		}
+		int[][] pose = { {1, 3, 6, 7}, {1, 3, 4, 5}, {1, 2, 4, 7}, {1, 2, 5, 6} };
+		// true이면 안되는거
+		boolean is = true;
 
+		for(int po: pose[dir]) {
+			if(nxny_map == po) {
+				is = false;
+			}
+		}
+		
+		return is;
+	}
+	
+	// 파이프에 따른 갈수 있는 거리 주기
+	public static int[][] dir(int x, int y){
+		// 동, 서, 남, 북
+		int[][] dirs = new int[][] { {-1, 0}, {1, 0}, {0, -1}, {0, 1} };
+		int[] EAST = new int[] {0, 1};
+		int[] WEST = new int[] {0, -1};
+		int[] SORTH = new int[] {1, 0};
+		int[] NORTH = new int[] {-1, 0};
+		
+		int temp = map[x][y];
 
-	static void pro() {
-		recul(0, new int[person_q.size()]);
+		if(temp == 1) {
+			return new int[][] {EAST, WEST, NORTH, SORTH};
+		} else if(temp == 2) {
+			return new int[][] {NORTH, SORTH};
+		}else if(temp == 3) {
+			return new int[][] {EAST, WEST};
+		}else if(temp == 4) {
+			return new int[][] {NORTH, EAST};
+		}else if(temp == 5) {
+			return new int[][] {EAST, SORTH};
+		}else if(temp == 6) {
+			return new int[][] {WEST, SORTH};
+		}else if(temp == 7) {
+			return new int[][] {WEST, NORTH};
+		}
+		
+		return null;
 	}
 
 	public static void main(String args[]) throws Exception
 	{
+
 		int T;
 		T=sc.nextInt();
 
@@ -191,79 +200,7 @@ class Solution {
 			input();
 			pro();
 
-			System.out.printf("#%d %d\n", test_case, result[2]);
+			System.out.printf("#%d %d\n", test_case, result);
 		}
-	}
-	
-	static class person implements Comparable<person>{
-		int x, y;
-		int status; // 0: 걷기, 1: 대기, 2: 계단
-		int live; // 도착 , 오른 차
-		int waite; // 대기 , 오른 
-		int stair; // 계단
-		int num;
-
-		public person(int x, int y,int num) {
-			this.x = x;
-			this.y = y;
-			this.status = 0;
-			this.live = 0;
-			this.waite = 0;
-			this.stair = 0;
-			this.num = num;
-		}
-		
-		public person clone() {
-			person clone = new person(x, y, num);
-			clone.status = status;
-			clone.live = live;
-			clone.waite = waite;
-			clone.stair = stair;
-
-			return clone;
-		}
-		
-		@Override
-		public int compareTo(person p) {
-			if(this.live != p.live) {
-				return Integer.compare(this.live, p.live);
-			}
-			
-			if(this.waite != p.waite) {
-				return Integer.compare(p.waite, this.waite);
-			}
-			
-			if(this.stair != p.stair) {
-				return Integer.compare(p.stair, this.stair);
-			}
-
-			return 0;
-		}
-
-		@Override
-		public String toString() {
-			return "person [x=" + x + ", y=" + y + ", status=" + status + ", live=" + live + ", waite=" + waite
-					+ ", stair=" + stair + ", num=" + num + "]";
-		}
-
-		
-		
-	}
-	
-	static class stair{
-		int x, y;
-		int num;
-
-		public stair(int x, int y, int num) {
-		this.x = x;
-		this.y = y;
-		this.num = num;
-		}
-
-		@Override
-		public String toString() {
-			return "stair [x=" + x + ", y=" + y + ", num=" + num + "]";
-		}
-		
 	}
 }
