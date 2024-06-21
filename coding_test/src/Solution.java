@@ -1,186 +1,141 @@
 import java.util.*;
 
-/**
-1
-8 3
-0 0 0 0 0 1 0 0
-0 1 0 1 0 0 0 1
-0 0 0 0 0 0 0 0
-0 0 0 1 0 1 0 0
-0 0 1 1 0 0 0 0
-0 0 0 0 0 0 0 0
-0 0 0 0 1 0 1 0
-1 0 0 0 0 0 0 0
-
-1
-5 1
-0 0 0 0 0
-0 0 0 0 0
-0 0 1 0 0
-0 0 0 0 0
-0 0 0 0 0
-
-1
-5 1
-0 0 0 0 0
-0 0 1 0 0
-0 1 1 1 0
-0 0 1 0 0
-0 0 0 0 0
-
- */
 class Solution {
-	static	Scanner sc = new Scanner(System.in);
-	static int MAX_RESULT;
-	static int N, M;
-	static int[][] map, test;
-	static int[][] visited;
-	static List<home> home_list;
-	static int LIMIT_MONEY;
-	static int VISI = 1, HOME = 2;
-	static int[][] dirs = { {0, 1}, {1, 0}, {0, -1}, {-1, 0} };
-	
-	static void input() {
-		MAX_RESULT = Integer.MIN_VALUE;
-		N = sc.nextInt();
-		M = sc.nextInt();
-		map = new int[N][N];
-		
-		int home_cnt = 0;
-		for(int i = 0; i < N; i++) {
-			for(int j = 0; j < N; j++) {
-				int num = sc.nextInt();
-				map[i][j] = num;
-				
-				if(num == 1) {
-					home_cnt++;
-				}
-			}
-		}
-		LIMIT_MONEY = (home_cnt * M);
-		
-//		Out.print("입력", map);
-//		Out.print("최대", LIMIT_MONEY);
-	}
-	
-	static void bfs(int x, int y) {
-		int k = 1; // 
-		int money = 1; // 회사의 운영 비용
-		PriorityQueue<point> q = new PriorityQueue<>(); // 탐사의 범위 관리
-		int pre_turn = 0;
-		q.add(new point(x, y, pre_turn));
-		if(map[x][y] == 1) {
-			visited[x][y] = HOME;
-			home_list.add(new home(x, y));
-			test[x][y] = HOME;
-			MAX_RESULT = Math.max(MAX_RESULT, home_list.size()); // 초기 집 
-		}else {
-			visited[x][y] = VISI; 
-			test[x][y] = VISI;
-		}
+    static Scanner sc = new Scanner(System.in);
+    static int result;
+    static int MOV = 2000; // 좌표를 0 ~ 2000으로 매핑하기 위해서 사용
+    static int N;
+    static point[] points;
+    static int LIVE = 0, DEAD = 1, OUT = 2;
+    static int[][] dirs = { {0, 1}, {0, -1}, {-1, 0}, {1, 0} }; // 상, 하, 좌, 우 방향
+    static PriorityQueue<Collision> collisions = new PriorityQueue<>(); // 충돌 이벤트를 관리하는 우선순위 큐
 
-		
-		// 운영비용이 같은 경우도 배제 => 향후 틀리면 수정
-//		while(money < LIMIT_MONEY && !q.isEmpty()) {
-		while(!q.isEmpty()) {
-			point now_point = q.poll();
-			int xx = now_point.x; int yy = now_point.y;
-						
-			// k의 사각형이 완성이 될시
-			if(now_point.turn > pre_turn) {
-				k++; // while 시작할시 ++,
-				money =( k * k ) + ( (k -1) * (k - 1) ); // 운영 비용 계산
-				if(( (home_list.size() * M) - money  ) >= 0 ){
-//				Out.print_line();
-//				Out.print("초기 집 시작", new int[] {x, y});
-//				Out.print("확인", test);
-//				Out.print("집 갯수", home_list.size());
-//				Out.print("집 내는 비용", (home_list.size() * M));
-//				Out.print("운영비용", money);
-					MAX_RESULT = Math.max(MAX_RESULT, home_list.size());
-				}
-				pre_turn = now_point.turn;
-			}
-			
-			for(int[] dir : dirs) {
-				int nx = xx + dir[0]; int ny = yy + dir[1];
-				
-				if(nx < 0 || ny < 0 || nx >= N || ny >= N) continue;
-				if(visited[nx][ny] != 0) continue;
+    // 입력을 받아 초기화하는 함수
+    static void input() {
+        result = 0;
+        N = sc.nextInt();
+        points = new point[N];
+        for (int i = 0; i < N; i++) {
+            int x = sc.nextInt();
+            int y = sc.nextInt();
+            int dir = sc.nextInt();
+            int energy = sc.nextInt();
+            // 원자의 초기 좌표를 (0, 0)을 중심으로 매핑하기 위해 +1000을 더함
+            points[i] = new point(i, x + 1000, y + 1000, dir, energy);
+        }
+    }
 
-				// 방문 체크
-				if(map[nx][ny] == 1) {
-					visited[nx][ny] = HOME;
-					home_list.add(new home(nx, ny));
-					test[nx][ny] = HOME;
-				}
-				if(map[nx][ny] == 0) {
-					visited[nx][ny] = VISI;
-					test[nx][ny] = VISI;
-				}
-				
-				q.add(new point(nx, ny, now_point.turn + 1));
-			}
-			// 현제 탐사을 진행한후,  운영 비용 - (집 * 집비용) >= 0 인경우 체크
-		}
-	}
-	
-	static void pro() {
-//		for(int i = 0; i < N ; i++) {
-//			for(int j = 0; j < N ; j++) {
-//				test = new int[N][N];
-//				home_list = new ArrayList<>();
-//				visited = new int[N][N];
-//				bfs(4, 3);
-//			}
-//		}
-		for(int i = 0; i < N ; i++) {
-			for(int j = 0; j < N ; j++) {
-				test = new int[N][N];
-				home_list = new ArrayList<>();
-				visited = new int[N][N];
-				bfs(i, j);
-			}
-		}
-	}
+    // 살아있는 원자가 있는지 확인하는 함수
+    static boolean valid() {
+        for (point p : points) {
+            if (p.live == LIVE)
+                return true;
+        }
+        return false;
+    }
 
-	public static void main(String args[]) throws Exception {
-		int T;
-		T=sc.nextInt();
+    // 충돌 시뮬레이션을 진행하는 함수
+    static void pro() {
+        // 충돌 후보를 우선순위 큐에 추가
+        for (int i = 0; i < N; i++) {
+            for (int j = i + 1; j < N; j++) {
+                addCollision(i, j);
+            }
+        }
 
-		for(int test_case = 1; test_case <= T; test_case++)
-		{
-			input();
-			pro();
-			
-			if(MAX_RESULT == Integer.MIN_VALUE) {
-				MAX_RESULT = 0;
-			}
-			System.out.printf("#%d %d\n", test_case, MAX_RESULT );
-		}
-	}
-	
-	static class point implements Comparable<point>{
-		int x, y, turn;
-		public point(int x, int y, int turn) {
-			this.x = x;
-			this.y = y;
-			this.turn = turn;
-		}
-		@Override
-		public int compareTo(point p) {
-			if(this.turn != p.turn) {
-				return Integer.compare(this.turn, p.turn);
-			}
-			return 0;
-		}
-	}
-	static class home{
-		int x, y;
-		public home(int x, int y) {
-			this.x = x;
-			this.y = y;
-		}
-	}
-	
+        // 우선순위 큐에서 충돌 이벤트를 하나씩 처리
+        while (!collisions.isEmpty()) {
+            Collision c = collisions.poll();
+            // 이미 죽은 원자가 포함된 경우나 시간이 맞지 않는 경우 무시
+            if (points[c.a].live != LIVE || points[c.b].live != LIVE)
+                continue;
+            if (c.time != points[c.a].time || c.time != points[c.b].time)
+                continue;
+
+            // 충돌한 원자를 DEAD 상태로 변경하고 에너지를 결과에 더함
+            points[c.a].live = DEAD;
+            points[c.b].live = DEAD;
+            result += points[c.a].energy + points[c.b].energy;
+        }
+    }
+
+    // 두 원자 간의 충돌 이벤트를 우선순위 큐에 추가하는 함수
+    static void addCollision(int i, int j) {
+        point a = points[i];
+        point b = points[j];
+
+        // 상 vs 하 충돌 확인
+        if (a.dir == 0 && b.dir == 1 && a.x == b.x && a.y < b.y) {
+            int time = (b.y - a.y) / 2;
+            collisions.add(new Collision(time, i, j));
+        } 
+        // 하 vs 상 충돌 확인
+        else if (a.dir == 1 && b.dir == 0 && a.x == b.x && a.y > b.y) {
+            int time = (a.y - b.y) / 2;
+            collisions.add(new Collision(time, i, j));
+        } 
+        // 좌 vs 우 충돌 확인
+        else if (a.dir == 2 && b.dir == 3 && a.y == b.y && a.x > b.x) {
+            int time = (a.x - b.x) / 2;
+            collisions.add(new Collision(time, i, j));
+        } 
+        // 우 vs 좌 충돌 확인
+        else if (a.dir == 3 && b.dir == 2 && a.y == b.y && a.x < b.x) {
+            int time = (b.x - a.x) / 2;
+            collisions.add(new Collision(time, i, j));
+        }
+    }
+
+    // 메인 함수: 테스트 케이스를 읽고 처리
+    public static void main(String args[]) throws Exception {
+        int T;
+        T = sc.nextInt();
+
+        for (int test_case = 1; test_case <= T; test_case++) {
+            input(); // 입력 처리
+            pro(); // 충돌 시뮬레이션
+            System.out.printf("#%d %d\n", test_case, result);
+        }
+    }
+
+    // 원자 정보를 담는 클래스
+    static class point {
+        int num;
+        int x, y, time;
+        int dir;
+        int energy;
+        int live;
+
+        public point(int num, int x, int y, int dir, int energy) {
+            this.num = num;
+            this.x = x;
+            this.y = y;
+            this.dir = dir;
+            this.energy = energy;
+            this.time = 0;
+            this.live = LIVE;
+        }
+
+        @Override
+        public String toString() {
+            return "[num" + num + ", x=" + x + ", y=" + y + ", time=" + time + ", dir=" + dir + ", energy=" + energy + ", live=" + live + "]\n";
+        }
+    }
+
+    // 충돌 이벤트를 담는 클래스
+    static class Collision implements Comparable<Collision> {
+        int time; // 충돌 시간
+        int a, b; // 충돌하는 두 원자의 인덱스
+
+        public Collision(int time, int a, int b) {
+            this.time = time;
+            this.a = a;
+            this.b = b;
+        }
+
+        @Override
+        public int compareTo(Collision other) {
+            return Integer.compare(this.time, other.time);
+        }
+    }
 }
