@@ -1,141 +1,176 @@
 import java.util.*;
 
+/**
+1
+20 3
+2 2 3 2 2 2 2 3 3 4 4 3 2 2 3 3 3 2 2 3
+4 4 1 4 4 1 4 4 1 1 1 4 1 4 3 3 3 3 3 3
+4 4 1 100
+7 10 3 40
+6 3 2 70
+
+1
+60 4
+0 3 3 3 0 1 2 2 2 1 2 2 3 3 4 4 0 3 0 1 1 2 2 3 2 2 3 2 2 0 3 0 1 1 1 4 1 2 3 3 3 3 3 1 1 4 3 2 0 4 4 4 3 4 0 3 3 0 3 4 
+1 1 4 1 1 1 1 1 1 4 4 1 2 2 3 2 4 0 0 0 4 3 3 4 3 3 0 1 0 4 3 0 4 3 2 3 2 1 2 2 3 4 0 2 2 1 0 0 1 3 3 1 4 4 3 0 1 1 1 1 
+6 9 1 180
+9 3 4 260
+1 4 1 500
+1 3 1 230
+
+ */
+
 class Solution {
-    static Scanner sc = new Scanner(System.in);
-    static int result;
-    static int MOV = 2000; // 좌표를 0 ~ 2000으로 매핑하기 위해서 사용
-    static int N;
-    static point[] points;
-    static int LIVE = 0, DEAD = 1, OUT = 2;
-    static int[][] dirs = { {0, 1}, {0, -1}, {-1, 0}, {1, 0} }; // 상, 하, 좌, 우 방향
-    static PriorityQueue<Collision> collisions = new PriorityQueue<>(); // 충돌 이벤트를 관리하는 우선순위 큐
+	static Scanner sc = new Scanner(System.in);
+	static int M, A, result, ans;
+	static int[][] moves;
+	static charger[] bc;
+	static int USER_A = 0, USER_B = 1;
+	static int[][] dirs = new int[][] { { 0, 0 }, { 0, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 } };
+	static user[] users;
+	static int[][] check;
+	static int[] result_arr;
+	
+	static void input() {
+		result = 0;
+		ans = 0;
+		M = sc.nextInt(); // 사람 걷는 수
+		A = sc.nextInt(); // bc의 갯수
+		moves = new int[2][M + 1];
+		bc = new charger[A];
+		users = new user[2];
+		users[USER_A] = new user(1, 1);
+		users[USER_B] = new user(10, 10);
+		check = new int[M + 1][M + 1];
+		result_arr = new int[M + 1];
+		
+		
+		// 초기 위치 추가
+		moves[USER_A][0] = 0;
+		moves[USER_B][0] = 0;
 
-    // 입력을 받아 초기화하는 함수
-    static void input() {
-        result = 0;
-        N = sc.nextInt();
-        points = new point[N];
-        for (int i = 0; i < N; i++) {
-            int x = sc.nextInt();
-            int y = sc.nextInt();
-            int dir = sc.nextInt();
-            int energy = sc.nextInt();
-            // 원자의 초기 좌표를 (0, 0)을 중심으로 매핑하기 위해 +1000을 더함
-            points[i] = new point(i, x + 1000, y + 1000, dir, energy);
-        }
-    }
+		for(int j = 0; j < 2; j++) {
+			for(int i = 1; i < M + 1 ; i++) {
+				moves[j][i] = sc.nextInt();
+			}
+		}
+		
+		for(int i = 0; i < A ; i++) {
+			int x = sc.nextInt();
+			int y = sc.nextInt();
+			int dir = sc.nextInt();
+			int value = sc.nextInt();
+			bc[i] = new charger(x, y, dir, value);
+		}
+		
+//		Out.print("입력 이동", moves);
+//		Out.print("입력 사람", users);
+//		Out.print("입력 bc", bc);
+	}
+	
+	static int distance( user u , charger c) {
+		return Math.abs(u.x - c.x) + Math.abs(u.y - c.y);
+	}
 
-    // 살아있는 원자가 있는지 확인하는 함수
-    static boolean valid() {
-        for (point p : points) {
-            if (p.live == LIVE)
-                return true;
-        }
-        return false;
-    }
+	static void pro() {
+		// 사용자 초기부터 충전 확인
+		// M + 1으로 시작
+		for(int i = 0; i < M + 1; i++) {
+			// 유저 이동
+			for(int user_num = 0; user_num < 2; user_num++) {
+				users[user_num].move(moves[user_num][i]);
+			}
+			
+//			Out.print_line();
+//			Out.print("사람 이동 확인", users);
+			ans+= count();
+		}
+		
+//		result = Arrays.stream(result_arr).sum();
+	}
+	
+	static int count() {
+		result = 0;
+		recur(0, 0);
+		return result;
+	}
 
-    // 충돌 시뮬레이션을 진행하는 함수
-    static void pro() {
-        // 충돌 후보를 우선순위 큐에 추가
-        for (int i = 0; i < N; i++) {
-            for (int j = i + 1; j < N; j++) {
-                addCollision(i, j);
-            }
-        }
+	// bc의 수만큼 유저들을 확인
+	private static void recur(int user, int ans) {
+		// TODO Auto-generated method stub
+		// 사람수 만큼 탐색
+		if(user == 2) {
+			result = Math.max(ans, result);
+//			result_arr[move_idx] = Math.max(result_arr[move_idx], ans);
+		}else {
+			// bc의 갯수 만큼 탐색
+				// 유저당 bc포함 여부 확인
+			for(int bc_num = 0 ; bc_num < A; bc_num++) {
+				int dis = distance(users[user], bc[bc_num]); // 유저와 bc의 거리
+				if(bc[bc_num].used) continue;
 
-        // 우선순위 큐에서 충돌 이벤트를 하나씩 처리
-        while (!collisions.isEmpty()) {
-            Collision c = collisions.poll();
-            // 이미 죽은 원자가 포함된 경우나 시간이 맞지 않는 경우 무시
-            if (points[c.a].live != LIVE || points[c.b].live != LIVE)
-                continue;
-            if (c.time != points[c.a].time || c.time != points[c.b].time)
-                continue;
+				if(dis <= bc[bc_num].d) {
+					bc[bc_num].used = true;
+					recur(user + 1, ans + bc[bc_num].value);
+					bc[bc_num].used = false;
+				}
+					// 1명 이 포함이 안되는 경우
+					recur(user + 1, ans);
+			}
+		}
+	}
 
-            // 충돌한 원자를 DEAD 상태로 변경하고 에너지를 결과에 더함
-            points[c.a].live = DEAD;
-            points[c.b].live = DEAD;
-            result += points[c.a].energy + points[c.b].energy;
-        }
-    }
+	public static void main(String args[]) throws Exception {
 
-    // 두 원자 간의 충돌 이벤트를 우선순위 큐에 추가하는 함수
-    static void addCollision(int i, int j) {
-        point a = points[i];
-        point b = points[j];
+		int T;
+		T=sc.nextInt();
 
-        // 상 vs 하 충돌 확인
-        if (a.dir == 0 && b.dir == 1 && a.x == b.x && a.y < b.y) {
-            int time = (b.y - a.y) / 2;
-            collisions.add(new Collision(time, i, j));
-        } 
-        // 하 vs 상 충돌 확인
-        else if (a.dir == 1 && b.dir == 0 && a.x == b.x && a.y > b.y) {
-            int time = (a.y - b.y) / 2;
-            collisions.add(new Collision(time, i, j));
-        } 
-        // 좌 vs 우 충돌 확인
-        else if (a.dir == 2 && b.dir == 3 && a.y == b.y && a.x > b.x) {
-            int time = (a.x - b.x) / 2;
-            collisions.add(new Collision(time, i, j));
-        } 
-        // 우 vs 좌 충돌 확인
-        else if (a.dir == 3 && b.dir == 2 && a.y == b.y && a.x < b.x) {
-            int time = (b.x - a.x) / 2;
-            collisions.add(new Collision(time, i, j));
-        }
-    }
+		for(int test_case = 1; test_case <= T; test_case++) {
+			input();
+			pro();
+			
+			System.out.printf("#%d %d\n", test_case, ans);
+		}
+	}
+	
+	static class charger{
+		int x, y;
+		int d;
+		int value;
+		boolean used;
 
-    // 메인 함수: 테스트 케이스를 읽고 처리
-    public static void main(String args[]) throws Exception {
-        int T;
-        T = sc.nextInt();
+		public charger(int x, int y, int d, int value) {
+			super();
+			this.x = x;
+			this.y = y;
+			this.d = d;
+			this.value = value;
+			this.used = false;
+		}
 
-        for (int test_case = 1; test_case <= T; test_case++) {
-            input(); // 입력 처리
-            pro(); // 충돌 시뮬레이션
-            System.out.printf("#%d %d\n", test_case, result);
-        }
-    }
+		@Override
+		public String toString() {
+			return "[x=" + x + ", y=" + y + ", d=" + d + ", value=" + value + ", used=" + used + "]\n";
+		}
+	}
+	
+	static class user{
+		int x, y;
 
-    // 원자 정보를 담는 클래스
-    static class point {
-        int num;
-        int x, y, time;
-        int dir;
-        int energy;
-        int live;
+		public user(int x, int y) {
+			super();
+			this.x = x;
+			this.y = y;
+		}
+		
+		public void move(int dir) {
+			this.x = this.x + dirs[dir][0];
+			this.y = this.y + dirs[dir][1];
+		}
 
-        public point(int num, int x, int y, int dir, int energy) {
-            this.num = num;
-            this.x = x;
-            this.y = y;
-            this.dir = dir;
-            this.energy = energy;
-            this.time = 0;
-            this.live = LIVE;
-        }
-
-        @Override
-        public String toString() {
-            return "[num" + num + ", x=" + x + ", y=" + y + ", time=" + time + ", dir=" + dir + ", energy=" + energy + ", live=" + live + "]\n";
-        }
-    }
-
-    // 충돌 이벤트를 담는 클래스
-    static class Collision implements Comparable<Collision> {
-        int time; // 충돌 시간
-        int a, b; // 충돌하는 두 원자의 인덱스
-
-        public Collision(int time, int a, int b) {
-            this.time = time;
-            this.a = a;
-            this.b = b;
-        }
-
-        @Override
-        public int compareTo(Collision other) {
-            return Integer.compare(this.time, other.time);
-        }
-    }
+		@Override
+		public String toString() {
+			return "[x=" + x + ", y=" + y + "]";
+		}
+	}
 }
