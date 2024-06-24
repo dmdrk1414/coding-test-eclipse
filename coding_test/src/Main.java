@@ -17,7 +17,7 @@ import java.io.FileInputStream;
 8
 
  */
-class Solution {
+class Main {
 	static Scanner sc = new Scanner(System.in);
 	static StringBuilder sb = new StringBuilder();
 	static int N, R, Q;
