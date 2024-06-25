@@ -34,7 +34,6 @@ class Main {
 		adj = new ArrayList[N + 1];
 		visited = new boolean[N + 1];
 		for(int i = 0; i < N + 1; i++) adj[i] = new ArrayList<>();
-		
 
 		dp = new int[N + 1];
 		que = new int[Q];
