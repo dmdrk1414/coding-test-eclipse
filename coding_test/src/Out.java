@@ -20,16 +20,15 @@ public class Out{
 	} 
 
 	public static void print(String str, int[][] arr) {
-		print(str);
-		for(int i = 0; i < arr.length ; i++	) {
-			
-			System.out.print(i + ": ");
-			for(int j = 0; j < arr[0].length ; j++	) {
-				System.out.print(arr[i][j] + " ");
-			}
-			print();
-		}
-		print();
+	    print(str);
+	    for (int i = 0; i < arr.length; i++) {
+	        System.out.print(i + ": ");
+	        for (int j = 0; j < arr[i].length; j++) {
+	            System.out.print(String.format("%2d", arr[i][j]) + " ");
+	        }
+	        print();
+	    }
+	    print();
 	}
 
 	public static<T> void print(String str, T[][] arr) {
