@@ -109,14 +109,6 @@ class Solution {
     }
 	
 	public static void main(String args[]) throws Exception {
-//		int T;
-//		T=sc.nextInt();
-//		for(int test_case = 1; test_case <= T; test_case++)
-//		{
-//			input();
-//			pro();
-//			System.out.printf("#%d %d\n", test_case, result);
-//		}
 		
 		int test = lowerBound(List.of(1, 2, 3, 5, 6, 7, 8, 9, 10), 4);
 		
