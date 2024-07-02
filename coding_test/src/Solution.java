@@ -54,7 +54,11 @@ class Solution {
 			}
 		}
 		
-//		Out.print("확인", map);
+		StringBuilder sb = new StringBuilder();
+
+		sb.isEmpty(); sb.isEmpty();
+		
+		// Out.print("확인", map);
 	}
 	
 	// 빈 공간의 q의 사이즈을 준다. 
@@ -110,6 +114,8 @@ class Solution {
 	public static void main(String args[]) throws Exception {
 		int test = lowerBound(List.of(1, 2, 3, 5, 6, 7, 8, 9, 10), 4);
 		Out.print("sdf", test);
+		
+		Integer.parseInt(null)
 	}
 	
 	static class Pos{
