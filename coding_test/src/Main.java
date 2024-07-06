@@ -1,85 +1,179 @@
 import java.util.*;
-import java.io.FileInputStream;
+import java.io.*;
 
 /**
+7 7
+#######
+#...RB#
+#.#####
+#.....#
+#####.#
+#O....#
+#######
 
-9 5 3
-1 3
-4 3
-5 4
-5 6
 6 7
-2 3
-9 6
-6 8
-5
-4
-8
+#######
+#B....#
+#R....#
+#.....#
+#.....#
+#######
 
  */
-class Main {
-	static Scanner sc = new Scanner(System.in);
-	static StringBuilder sb = new StringBuilder();
-	static int N, R, Q;
-	static List<Integer>[] adj;
-	static int[] dp;
-	static int[] que;
-	static boolean[] visited;
+public class Main {
+	static int N, M;
+	static char[][] map;
+	static boolean[][][][] visited;
+	static int holeX, holeY;
+	static Marble blue, red;
 	
-	static void input() {
-		N = sc.nextInt();
-		R = sc.nextInt();
-		Q = sc.nextInt();
-		
-		adj = new ArrayList[N + 1];
-		visited = new boolean[N + 1];
-		for(int i = 0; i < N + 1; i++) adj[i] = new ArrayList<>();
+	static int[] dx = {-1, 0, 1, 0};
+	static int[] dy = {0, 1, 0, -1}; 
 
-		dp = new int[N + 1];
-		que = new int[Q];
-		Arrays.fill(dp, 1);
+	public static void main(String[] args) throws IOException {
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		StringTokenizer st = new StringTokenizer(br.readLine());
+
+		N = Integer.parseInt(st.nextToken());		
+		M = Integer.parseInt(st.nextToken());		
 		
-		for(int i = 0; i < N - 1; i++) {
-			int one = sc.nextInt(); 
-			int two = sc.nextInt(); 
-			adj[one].add(two);
-			adj[two].add(one);
-		}
-		
-		for(int i = 0; i < Q; i++) {
-			que[i] = sc.nextInt();
+		map = new char[N][M];
+		visited = new boolean[N][M][N][M];
+
+		// 구슬 map 구성 
+		for(int i = 0; i < N; i++) {
+			String str = br.readLine();
+			for(int j = 0; j < M; j++) {
+				map[i][j] = str.charAt(j);
+				
+				if(map[i][j] == 'O') {
+					holeX = i;
+					holeY = j;
+				} else if(map[i][j] == 'B') {
+					blue = new Marble(0, 0, i, j, 0);
+				} else if(map[i][j] == 'R') {
+					red = new Marble(i, j, 0, 0, 0);
+				}
+			}
 		}
 
+		System.out.println(bfs());
+		
+		br.close();
 	}
 	
-	static void recur(int value) {
-		if(adj[value].isEmpty()) {
-			return;
+	// BFS를 이용하여 탐색.  (최단거리를 찾아야하기 때문, 10 이하)
+	public static int bfs() {
+		Queue<Marble> queue = new LinkedList<>();
+		queue.add(new Marble(red.rx, red.ry, blue.bx, blue.by, 1));
+		visited[red.rx][red.ry][blue.rx][blue.ry] = true;
+		
+		while(!queue.isEmpty()) {
+			Marble marble = queue.poll();
+			
+			int curRx = marble.rx;
+			int curRy = marble.ry;
+			int curBx = marble.bx;
+			int curBy = marble.by;
+			int curCnt = marble.cnt;
+		
+			// 이동 횟수가 10 초과시 실패
+			if(curCnt > 10) {  
+				break;
+			}
+			
+			for(int i = 0; i < 4; i++) {
+				int newRx = curRx;
+				int newRy = curRy;
+				int newBx = curBx;
+				int newBy = curBy;
+				
+				boolean isRedHole = false;
+				boolean isBlueHole = false;
+				
+				// 빨간 구슬 이동
+				// 벽을 만날 때까지 해당 방향으로 계속 
+				while(map[newRx + dx[i]][newRy + dy[i]] != '#') { 
+					newRx += dx[i];
+					newRy += dy[i];
+					
+					// 이동 중 구멍을 만나면, flag값 기록
+					if(newRx == holeX && newRy == holeY) { 
+						isRedHole = true;
+						break;
+					}
+				}
+				
+				// 파란 구슬 이동
+				// 벽을 만날 때까지 해당 방향으로 계속
+				while(map[newBx + dx[i]][newBy + dy[i]] != '#') { 
+					newBx += dx[i];
+					newBy += dy[i];
+					
+					// 이동 중 구멍을 만나면, flag값 기록 
+					if(newBx == holeX && newBy == holeY) { 
+						isBlueHole = true;
+						break;
+					}
+				}
+				
+				// 파란 구슬이 구멍에 들어가면 무조건 실패 -> 다음 큐 확인
+				if(isBlueHole) {  
+					continue;  
+				}
+				
+				// 빨간 구슬만 구멍에 빠지면 성공 
+				if(isRedHole) { 
+					return curCnt;
+				}
+				
+				// 둘 다 구멍에 빠지지 않았는데 이동할 위치가 같은 경우 -> 위치 조정
+				// 빨간, 파란 구슬이 모두 같은 방향으로 벽까지 가기 때문에, 같은 좌표로 이동할 수 있음. 하지만, 한 좌표에는 하나의 구슬 만 있어야함 
+				if(newRx == newBx && newRy == newBy) {
+					if(i == 0) { // 위쪽으로 기울이기 
+						// 더 큰 x값을 가지는 구슬이 뒤로 감 
+						if(curRx > curBx) newRx -= dx[i]; 
+						else newBx -= dx[i];
+					} else if(i == 1) { // 오른쪽으로 기울이기 
+						// 더 작은 y값을 가지는 구슬이 뒤로 감 
+						if(curRy < curBy) newRy -= dy[i];
+						else newBy -= dy[i];	
+					} else if(i == 2) { // 아래쪽으로 기울이기 
+						// 더 작은 x값을 가지는 구슬이 뒤로 감 
+						if(curRx < curBx) newRx -= dx[i]; 
+						else newBx -= dx[i];
+					} else { // 왼쪽으로 기울이기 
+						// 더 큰 y값을 가지는 구슬이 뒤로 감 
+						if(curRy > curBy) newRy -= dy[i]; 
+						else newBy -= dy[i];	
+					}
+				}
+				
+				// 두 구슬이 이동할 위치가 처음 방문하는 곳일 때만 큐에 추가 
+				if(!visited[newRx][newRy][newBx][newBy]) {
+					visited[newRx][newRy][newBx][newBy] = true;
+					queue.add(new Marble(newRx, newRy, newBx, newBy, curCnt+1));
+				}
+			}
 		}
-
-		for(Integer child : adj[value]) {
-			if(visited[child]) continue;
-			visited[child] = true;
-
-			recur(child);
-
-			dp[value] += dp[child];
-		}
+		
+		return -1;
 	}
+
+}
+
+class Marble {
+	int rx;
+	int ry;
+	int bx;
+	int by;
+	int cnt;
 	
-	static void pro() {
-		visited[R] = true;
-		recur(R);
-		
-		for(int i = 0; i < Q; i++) {
-			sb.append(dp[que[i]]).append("\n");
-		}
-	}
-
-	public static void main(String args[]) throws Exception {
-		input();
-		pro();
-		
-		System.out.print(sb);
+	Marble(int rx, int ry, int bx, int by, int cnt) {
+		this.rx = rx;
+		this.ry = ry;
+		this.bx = bx;
+		this.by = by;
+		this.cnt = cnt;
 	}
 }

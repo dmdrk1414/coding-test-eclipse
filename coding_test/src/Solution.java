@@ -1,131 +1,56 @@
 import java.util.*;
 import java.io.FileInputStream;
-
-
-/**
-1
-5 6
-......
-.939..
-.3428.
-.9393.
-......
-
-1
-10 10
-..........
-.99999999.
-.9.323239.
-.91444449.
-.91444449.
-.91444449.
-.91444449.
-.91232329.
-.99999999.
-..........
-
-
- */
 class Solution {
 	static Scanner sc = new Scanner(System.in);
-	static int result = 0;
-	static int N, M;
-	static int BLANK = 0;
+	static List<Integer>[] adj;
+	static int N, result;
 	static int[][] map;
-	static Queue<Pos> q;
-    static int[][] dirs = {{-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1, -1}, {1, 0}, {1, 1}};
+	static boolean[] visited;
 
-	static void input() {
-		result = 0;
-		N = sc.nextInt();
-		M = sc.nextInt();
-		map = new int[N][M];
-		q = new LinkedList<>();
-		
-		for(int i = 0; i < N ; i++) {
-			String in = sc.next();
-			for(int j = 0; j < M ; j++) {
-				if(in.charAt(j) == '.') {
-					q.add(new Pos(i, j));
-					map[i][j] = BLANK;
-				}else {
-					map[i][j] = in.charAt(j) - '0';
-				}
-			}
-		}
-		
-		StringBuilder sb = new StringBuilder();
-
-		sb.isEmpty(); sb.isEmpty();
-		
-		// Out.print("확인", map);
-	}
-	
-	// 빈 공간의 q의 사이즈을 준다. 
-	// q의 사이즈가 없으면 다음의 과의 변화을 할 것이 없다는 뜻이다. 
-	static int bfs() {
-		int q_size = q.size();
-
-		for(int i = 0; i < q_size ; i++) {
-			Pos now = q.poll();
-			int xx = now.x; int yy = now.y;
-			
-			for(int[] dir: dirs) {
-				int nx = xx + dir[0]; int ny = yy + dir[1];
-				
-				if(nx < 0 || ny < 0 || nx >= N || ny >= M) continue;
-				if(map[nx][ny] != BLANK) {
-					map[nx][ny]--;
-					
-					if(map[nx][ny] == 0) {
-						q.add(new Pos(nx, ny));
-					}
-				}
-			}
-		}
-
-//		Out.print("BFS이후 확인", map);
-		
-		return q.size();
-	}
-
-	static void pro() { 
-		
-		while(true) {
-			if(bfs() == 0) break;
-			result++;
-		}
-	}
-	
-    // 이진 탐색 구현
-    private static int lowerBound(List<Integer> list, int target) {
-        int left = 0, right = list.size();
-        while (left < right) {
-            int mid = (left + right) / 2;
-            if (list.get(mid) < target) {
-                left = mid + 1;
-            } else {
-                right = mid;
-            }
-            Out.print("확인", new int[] {left, right, mid});
-        }
-        return left;
-    }
-    
 	public static void main(String args[]) throws Exception {
-		int test = lowerBound(List.of(1, 2, 3, 5, 6, 7, 8, 9, 10), 4);
-		Out.print("sdf", test);
+		N = sc.nextInt();
+		adj = new ArrayList[N];
+		visited = new boolean[N];
+		result = Integer.MAX_VALUE;
+		map = new int[N][N];
+
+		for(int i = 0; i < N; i++) {
+			adj[i] = new ArrayList<>();
+		}
 		
-		Integer.parseInt(null)
+		for(int i = 0; i < N; i++) {
+			for(int j = 0; j < N; j++) {
+				int value = sc.nextInt();
+				if(value != 0) {
+					map[i][j] = value;
+					adj[i].add(j);
+					adj[j].add(i);
+				}
+			}
+		}
+		
+		visited[0] = true;
+		recur(1, 0, 0, 0);
+		visited[0] = false;
+		
+		System.out.print(result);
 	}
 	
-	static class Pos{
-		int x, y;
+	static void recur(int idx, int value, int money, int init) {
+		if(result <= money) return;
+		if(idx == N) {
+			int total = money + map[value][init];
+			result = Math.min(result, total);
+		}
+		else {
+			for(int next = 0; next < N; next++) {
+				if(visited[next]) continue;
+				if(map[value][next] == 0) continue;
 
-		public Pos(int x, int y) {
-			super();
-			this.x = x;
-			this.y = y;
+				visited[next] = true;
+				recur(idx + 1, next, money + map[value][next], init);
+				visited[next] = false;
+			}
 		}
 	}
 }
