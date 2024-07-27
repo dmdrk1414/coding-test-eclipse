@@ -7,78 +7,51 @@ import java.util.Arrays;
 import java.util.StringTokenizer;
 
 /**
-3 4 5
-2 3
-2 1
-3 3
+3 15
+1
+5
+12
 
  */
 public class Main {
 	static BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 	static BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(System.out));
 	static StringTokenizer st;
-	static int[][] dp_1;
-	static int N, X, Y;
-	static int c_x, c_y;
-	static Custom[] customs;
+	static int[] dp;
+	static int N, K;
 	static StringBuilder sb = new StringBuilder();
+	static int[] coins;
 
 	private static void input() throws IOException {
 		st = new StringTokenizer(br.readLine());
 		N = Integer.parseInt(st.nextToken());
-		X = Integer.parseInt(st.nextToken());
-		Y = Integer.parseInt(st.nextToken());
-
-		customs = new Custom[N + 1];
-		dp_1 = new int[X + 1][Y + 1];
-		c_x = 0;
-		c_y = 0;
+		K = Integer.parseInt(st.nextToken());
+		
+		dp = new int[K + 1];
+		coins = new int[N + 1];
+		Arrays.fill(dp, Integer.MAX_VALUE - 1);
 
 		for (int i = 1; i <= N; i++) {
 			st = new StringTokenizer(br.readLine());
-			int x = Integer.parseInt(st.nextToken());
-			int y = Integer.parseInt(st.nextToken());
-			customs[i] = new Custom(x, y);
-			c_x += x;
-			c_y += y;
+			coins[i] = Integer.parseInt(st.nextToken());
 		}
 	}	
 
 	private static void pro() {
-		// 없으면 -1 출력
-		if(c_x < X || c_y < Y) {
-			System.out.println(-1);
-			return;
-		}
-		
-		for (int i = 0; i <= X; i++) {
-			Arrays.fill(dp_1[i], 1);
-		}
-
-		// 최소고객수
-		// 마지막판매에 성공하는 고객의 번호
-		for (int x = 1; x <= X; x++) {
-			for (int y = 1; y <= Y; y++) {
-				for (int i = 1; i <= N; i++) {
-					Custom custom = customs[i];
-					
-					if(custom.x >= x && custom.y >= y) {
-						dp_1[x][y] = 1;
-						break;
-					}else if(custom.x < x || custom.y < y) {
-						int x_custom_x = x - custom.x;
-						int y_custom_y = y - custom.y;
-
-						if(x_custom_x <= 0) x_custom_x = custom.x;
-						if(y_custom_y <= 0) y_custom_y = custom.y;
-						dp_1[x][y] = dp_1[x][y] + dp_1[x_custom_x][y_custom_y];
-					}
+		dp[0] = 0;
+		for (int i = 1; i <= N; i++) {
+			int coin = coins[i];
+			for (int money = coin; money <= K; money++) {
+				
+					dp[money] = Math.min( dp[money], dp[money - coin] + 1);
 				}
 			}
+		  if(dp[K]==Integer.MAX_VALUE-1)
+			  System.out.println(-1);
+		  else
+			  System.out.println(dp[k]);
 		}
-		
-		Out.print("확인", dp_1);
-	}
+	
 
     public static void main(String[] args) throws NumberFormatException, IOException {
 		input();
@@ -88,16 +61,6 @@ public class Main {
     	bw.flush();
     	bw.close();
     	br.close();
-    }
-
-    static class Custom{
-    	int x, y;
-
-		public Custom(int x, int y) {
-			super();
-			this.x = x;
-			this.y = y;
-		}
     }
 }
 
