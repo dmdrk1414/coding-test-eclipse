@@ -7,10 +7,14 @@ import java.util.Arrays;
 import java.util.StringTokenizer;
 
 /**
-3 15
-1
-5
-12
+4 5
+1 1 3 2
+
+5 5
+1 1 3 2 5
+
+5 7
+1 1 1 1 1
 
  */
 public class Main {
@@ -19,44 +23,53 @@ public class Main {
 	static StringTokenizer st;
 	static int[] dp;
 	static int N, K;
+	static int check;
 	static StringBuilder sb = new StringBuilder();
-	static int[] coins;
+	static int[] coffes;
 
 	private static void input() throws IOException {
 		st = new StringTokenizer(br.readLine());
 		N = Integer.parseInt(st.nextToken());
 		K = Integer.parseInt(st.nextToken());
+		check = 0;
 		
 		dp = new int[K + 1];
-		coins = new int[N + 1];
+		coffes = new int[N + 1];
 		Arrays.fill(dp, Integer.MAX_VALUE - 1);
 
+		st = new StringTokenizer(br.readLine());
 		for (int i = 1; i <= N; i++) {
-			st = new StringTokenizer(br.readLine());
-			coins[i] = Integer.parseInt(st.nextToken());
+			coffes[i] = Integer.parseInt(st.nextToken());
+			check += coffes[i];
 		}
 	}	
 
 	private static void pro() {
+		if(check < K) {
+		  System.out.println(-1);
+		  return;
+		}
+		
+		
 		dp[0] = 0;
+		
 		for (int i = 1; i <= N; i++) {
-			int coin = coins[i];
-			for (int money = coin; money <= K; money++) {
-				
-					dp[money] = Math.min( dp[money], dp[money - coin] + 1);
-				}
+			int coffe = coffes[i];
+//			for (int co = coffe;  co <= K; co++) {
+			for (int co = K;  co >= coffe; co--) {
+		          if (dp[co - coffe] != Integer.MAX_VALUE) {
+	                    dp[co] = Math.min(dp[co], dp[co - coffe] + 1);
+	                }
 			}
-		  if(dp[K]==Integer.MAX_VALUE-1)
-			  System.out.println(-1);
-		  else
-			  System.out.println(dp[k]);
+		}
+		
+		  System.out.println(dp[K]);
 		}
 	
 
     public static void main(String[] args) throws NumberFormatException, IOException {
 		input();
 		pro();
-    	
     	bw.write(sb.toString());
     	bw.flush();
     	bw.close();
